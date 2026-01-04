@@ -1,25 +1,21 @@
 # Lokabisa OSS
 
-Open-source projects and references by Lokabisa.
+This repository hosts **oss.lokabisa.id**.
 
-This repository hosts the landing page for **oss.lokabisa.id**,
-serving as a showcase for Lokabisa OSS initiatives.
+Current phase:
 
----
+- Static landing page
+- Showcase of Lokabisa OSS projects
+
+Future phase:
+
+- Hosted services
+- Public APIs derived from OSS projects
 
 ## Projects
 
-### region-id
+- region-id  
+  https://github.com/lokabisa-oss/region-id
 
-Indonesia administrative region reference  
-Province → Regency/City → District → Village  
-https://github.com/lokabisa-oss/region-id
-
-### id-documents
-
-Structured references of official Indonesian government documents  
-https://github.com/lokabisa-oss/id-documents
-
----
-
-More projects will be added over time.
+- id-documents  
+  https://github.com/lokabisa-oss/id-documents

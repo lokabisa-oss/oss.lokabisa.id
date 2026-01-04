@@ -1,0 +1,38 @@
+---
+const projects = [
+  {
+    name: "region-id",
+    desc: "Indonesia administrative region reference.",
+    url: "https://github.com/lokabisa-oss/region-id",
+  },
+  {
+    name: "id-documents",
+    desc: "Official Indonesian document references.",
+    url: "https://github.com/lokabisa-oss/id-documents",
+  },
+];
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Lokabisa OSS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Lokabisa open-source projects." />
+  </head>
+  <body>
+    <main>
+      <h1>Lokabisa OSS</h1>
+      <p>Open-source projects by Lokabisa.</p>
+
+      <ul>
+        {projects.map((p) => (
+          <li>
+            <a href={p.url} target="_blank">{p.name}</a>
+            <span> — {p.desc}</span>
+          </li>
+        ))}
+      </ul>
+    </main>
+  </body>
+</html>
