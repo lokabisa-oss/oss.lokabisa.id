@@ -2,14 +2,14 @@
 const GITHUB_ORG = "lokabisa-oss";
 
 const headers = {
-  Accept: "application/vnd.github+json",
-  "User-Agent": "lokabisa-oss-site",
-  Authorization: `Bearer ${import.meta.env.GITHUB_TOKEN}`,
+	Accept: "application/vnd.github.mercy-preview+json",
+	"User-Agent": "lokabisa-oss-site",
+	Authorization: `Bearer ${import.meta.env.GITHUB_TOKEN}`,
 };
 
 
 const orgRes = await fetch(`https://api.github.com/orgs/${GITHUB_ORG}`, {
-  headers,
+  	headers,
 });
 
 const org = orgRes.ok
@@ -24,13 +24,26 @@ const reposRes = await fetch(
 let repos = reposRes.ok ? await reposRes.json() : [];
 
 repos = repos
-  .filter((r) => !r.fork && !r.archived && r.name !== "oss.lokabisa.id")
-  .map((r) => ({
+  .filter((r: { fork: any; archived: any; name: string; }) => !r.fork && !r.archived && r.name !== "oss.lokabisa.id")
+  .map((r: { name: any; description: any; html_url: any; stargazers_count: any; topics: any; pushed_at: any; }) => ({
     name: r.name,
     desc: r.description || "No description provided.",
     url: r.html_url,
     stars: r.stargazers_count,
+  	topics: r.topics || [],
+	updatedAt: r.pushed_at,
   }));
+
+function timeAgo(dateString: string | number | Date) {
+  const diff = Date.now() - new Date(dateString).getTime();
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+  if (days < 1) return "today";
+  if (days < 7) return `${days}d ago`;
+  if (days < 30) return `${Math.floor(days / 7)}w ago`;
+  return `${Math.floor(days / 30)}mo ago`;
+}
+
 ---
 
 <!DOCTYPE html>
@@ -61,24 +74,44 @@ repos = repos
 		<div class="divider"></div>
 
 		<section class="projects">
-			{repos.map((repo: { name: unknown; url: string | URL | null | undefined; stars: unknown; desc: unknown; }) => {
+			{repos.map((repo: {
+[x: string]: any; name: unknown; url: string | URL | null | undefined; stars: unknown; desc: unknown; 
+}) => {
 				const isFeatured = repo.name === "region-id";
 				return (
-				  <a
-					class={`card ${isFeatured ? "featured" : ""}`}
-					href={repo.url}
-					target="_blank"
-					rel="noopener"
-				  >
+				  <div class={`card ${isFeatured ? "featured" : ""}`}>
+					 <a class="card-link" href={repo.url} target="_blank"></a>
 					<div class="card-head">
 					  <h2>
 						{repo.name}
 						{isFeatured && <span class="badge">Featured</span>}
 					  </h2>
 					  <span class="meta">★ {repo.stars}</span>
+
 					</div>
 					<p>{repo.desc}</p>
-				  </a>
+					<div class="card-actions">
+						<a
+						href="https://github.com/lokabisa-oss/region-id/releases"
+						target="_blank"
+						rel="noopener"
+						class="release-link"
+						>
+						Download datasets →
+						</a>
+					</div>
+					<div class="card-meta">
+						<span class="updated">Updated {timeAgo(repo.updatedAt)}</span>
+					</div>
+					{repo.topics?.length > 0 && (
+						<div class="tags">
+							{repo.topics.slice(0, 4).map((tag: unknown) => (
+							<span class="tag">{tag}</span>
+							))}
+						</div>
+						)}
+
+				  </div>
 				);
 			  })}
 			  
