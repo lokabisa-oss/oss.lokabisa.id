@@ -7,7 +7,6 @@ const headers = {
 	Authorization: `Bearer ${import.meta.env.GITHUB_TOKEN}`,
 };
 
-
 const orgRes = await fetch(`https://api.github.com/orgs/${GITHUB_ORG}`, {
   	headers,
 });
@@ -24,15 +23,29 @@ const reposRes = await fetch(
 let repos = reposRes.ok ? await reposRes.json() : [];
 
 repos = repos
-  .filter((r: { fork: any; archived: any; name: string; }) => !r.fork && !r.archived && r.name !== "oss.lokabisa.id")
-  .map((r: { name: any; description: any; html_url: any; stargazers_count: any; topics: any; pushed_at: any; }) => ({
-    name: r.name,
-    desc: r.description || "No description provided.",
-    url: r.html_url,
-    stars: r.stargazers_count,
-  	topics: r.topics || [],
-	updatedAt: r.pushed_at,
-  }));
+	.filter(
+	(r: { fork: any; archived: any; name: string; }) => !r.fork && !r.archived && r.name !== "oss.lokabisa.id"
+	)
+	.map((r: { name: string; description: any; html_url: any; stargazers_count: any; topics: any; pushed_at: any; }) => ({
+		name: r.name,
+		desc: r.description || "No description provided.",
+		url: r.html_url,
+		stars: r.stargazers_count,
+		updatedAt: r.pushed_at,
+		featured: r.topics?.includes("featured"),
+		topics: r.topics.filter((t: string) => t !== "featured"),
+	}))
+	.sort((a: { featured: any; updatedAt: string | number | Date; }, b: { featured: any; updatedAt: string | number | Date; }) => {
+
+	if (a.featured && !b.featured) return -1;
+	if (!a.featured && b.featured) return 1;
+
+	return (
+		new Date(b.updatedAt).getTime() -
+		new Date(a.updatedAt).getTime()
+	);
+	});
+
 
 function timeAgo(dateString: string | number | Date) {
   const diff = Date.now() - new Date(dateString).getTime();
@@ -80,7 +93,7 @@ function timeAgo(dateString: string | number | Date) {
 				const isFeatured = repo.name === "region-id";
 				return (
 				  <div class={`card ${isFeatured ? "featured" : ""}`}>
-					 <a class="card-link" href={repo.url} target="_blank"></a>
+					<a class="card-link" href={repo.url} target="_blank"></a>
 					<div class="card-head">
 					  <h2>
 						{repo.name}
@@ -90,16 +103,18 @@ function timeAgo(dateString: string | number | Date) {
 
 					</div>
 					<p>{repo.desc}</p>
-					<div class="card-actions">
-						<a
-						href="https://github.com/lokabisa-oss/region-id/releases"
-						target="_blank"
-						rel="noopener"
-						class="release-link"
-						>
-						Download datasets →
-						</a>
-					</div>
+					{isFeatured && (
+						<div class="card-actions">
+							<a
+							href="https://github.com/lokabisa-oss/region-id/releases"
+							target="_blank"
+							rel="noopener"
+							class="release-link"
+							>
+							Download datasets →
+							</a>
+						</div>
+					)}
 					<div class="card-meta">
 						<span class="updated">Updated {timeAgo(repo.updatedAt)}</span>
 					</div>
