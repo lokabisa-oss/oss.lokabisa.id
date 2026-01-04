@@ -1,38 +1,97 @@
 ---
-const projects = [
-  {
-    name: "region-id",
-    desc: "Indonesia administrative region reference.",
-    url: "https://github.com/lokabisa-oss/region-id",
-  },
-  {
-    name: "id-documents",
-    desc: "Official Indonesian document references.",
-    url: "https://github.com/lokabisa-oss/id-documents",
-  },
-];
+const GITHUB_ORG = "lokabisa-oss";
+
+const headers = {
+  Accept: "application/vnd.github+json",
+  "User-Agent": "lokabisa-oss-site",
+  Authorization: `Bearer ${import.meta.env.GITHUB_TOKEN}`,
+};
+
+
+const orgRes = await fetch(`https://api.github.com/orgs/${GITHUB_ORG}`, {
+  headers,
+});
+
+const org = orgRes.ok
+  ? await orgRes.json()
+  : { avatar_url: "/logo.png" };
+
+const reposRes = await fetch(
+  `https://api.github.com/orgs/${GITHUB_ORG}/repos?per_page=100&sort=updated`,
+  { headers }
+);
+
+let repos = reposRes.ok ? await reposRes.json() : [];
+
+repos = repos
+  .filter((r) => !r.fork && !r.archived && r.name !== "oss.lokabisa.id")
+  .map((r) => ({
+    name: r.name,
+    desc: r.description || "No description provided.",
+    url: r.html_url,
+    stars: r.stargazers_count,
+  }));
 ---
 
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <title>Lokabisa OSS</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="Lokabisa open-source projects." />
+    <meta
+      name="description"
+      content="Open-source projects and public infrastructure by Lokabisa."
+    />
+    <link rel="stylesheet" href="/styles/base.css" />
   </head>
-  <body>
-    <main>
-      <h1>Lokabisa OSS</h1>
-      <p>Open-source projects by Lokabisa.</p>
 
-      <ul>
-        {projects.map((p) => (
-          <li>
-            <a href={p.url} target="_blank">{p.name}</a>
-            <span> — {p.desc}</span>
-          </li>
-        ))}
-      </ul>
+  <body>
+    <main class="container">
+		<header class="header">
+			<div class="brand">
+			  <img src={org.avatar_url} alt="Lokabisa OSS" />
+			  <div class="brand-text">
+				<h1>Lokabisa OSS</h1>
+				<p>Open-source projects & public infrastructure.</p>
+			  </div>
+			</div>
+		</header>
+
+		<div class="divider"></div>
+
+		<section class="projects">
+			{repos.map((repo: { name: unknown; url: string | URL | null | undefined; stars: unknown; desc: unknown; }) => {
+				const isFeatured = repo.name === "region-id";
+				return (
+				  <a
+					class={`card ${isFeatured ? "featured" : ""}`}
+					href={repo.url}
+					target="_blank"
+					rel="noopener"
+				  >
+					<div class="card-head">
+					  <h2>
+						{repo.name}
+						{isFeatured && <span class="badge">Featured</span>}
+					  </h2>
+					  <span class="meta">★ {repo.stars}</span>
+					</div>
+					<p>{repo.desc}</p>
+				  </a>
+				);
+			  })}
+			  
+		</section>
+
+		<footer class="footer">
+			<p>
+			Built by Lokabisa ·
+			<a href="https://github.com/lokabisa-oss" target="_blank">
+				GitHub
+			</a>
+			</p>
+		</footer>
     </main>
   </body>
 </html>
